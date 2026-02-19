@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Logs
+logs/*.log
+
+# Knowledge index artifacts (you may choose to version these later)
+knowledge/index/chroma/
+knowledge/index/manifest.json
+knowledge/processed/
+knowledge/snapshots/
+
+# macOS
+.DS_Store

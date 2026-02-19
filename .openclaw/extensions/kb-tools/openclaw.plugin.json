@@ -1,0 +1,11 @@
+{
+  "id": "kb-tools",
+  "name": "Knowledge Base Tools",
+  "description": "KB ingest, notes, and retrieval tools backed by a local Python pipeline.",
+  "version": "1.0.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

@@ -1,0 +1,2257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenClaw Agent Guide (Local-first + OpenAI)</title>
+  <style>
+:root{
+  --bg:#0b0f14;
+  --panel:#0f1720;
+  --text:#e6edf3;
+  --muted:#9fb0c0;
+  --brand:#6ae4ff;
+  --line:#223043;
+  --warn:#ffcc66;
+  --good:#7dffb2;
+  --codebg:#0a0e13;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --radius: 14px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--sans);
+  background:linear-gradient(180deg, #070a0e 0%, var(--bg) 100%);
+  color:var(--text);
+}
+a{color:var(--brand); text-decoration:none}
+a:hover{text-decoration:underline}
+.layout{
+  display:grid;
+  grid-template-columns: 320px 1fr;
+  height:100vh;
+}
+.sidebar{
+  border-right:1px solid var(--line);
+  background:rgba(15,23,32,.75);
+  backdrop-filter: blur(10px);
+  padding:18px 16px;
+  overflow:auto;
+}
+.brand{
+  display:flex; gap:10px; align-items:center;
+  padding:12px 12px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow: var(--shadow);
+  background:rgba(10,14,19,.65);
+}
+.brand .logo{
+  width:40px; height:40px; border-radius:12px;
+  background: radial-gradient(circle at 30% 30%, #6ae4ff, #3f7cff 55%, #1f2a40);
+  border:1px solid rgba(255,255,255,.08);
+}
+.brand .title{font-weight:700}
+.brand .subtitle{font-size:12px; color:var(--muted); margin-top:2px}
+.search{
+  margin:14px 0 10px;
+}
+.search input{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(10,14,19,.6);
+  color:var(--text);
+}
+.toc{
+  margin-top:10px;
+}
+.toc a{
+  display:block;
+  padding:10px 10px;
+  margin:6px 0;
+  border-radius:12px;
+  border:1px solid transparent;
+  color:var(--text);
+}
+.toc a small{color:var(--muted); display:block; margin-top:2px}
+.toc a:hover{border-color:rgba(106,228,255,.35); background:rgba(106,228,255,.06)}
+.toc a.active{border-color:rgba(106,228,255,.55); background:rgba(106,228,255,.10)}
+.sidebar .actions{
+  display:flex; gap:10px; margin-top:12px;
+}
+.btn{
+  flex:1;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(10,14,19,.7);
+  color:var(--text);
+  cursor:pointer;
+}
+.btn:hover{border-color:rgba(106,228,255,.5)}
+.content{
+  overflow:auto;
+  padding:22px 26px 80px;
+}
+.card{
+  max-width: 1050px;
+  margin: 0 auto 14px;
+  padding: 18px 18px;
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(15,23,32,.55);
+  box-shadow: var(--shadow);
+}
+h1{margin:0 0 10px; font-size:28px}
+h2{margin:8px 0 10px; font-size:20px}
+h3{margin:16px 0 8px; font-size:16px; color:#d9e7f3}
+p,li{line-height:1.55; color:#d7e3ee}
+hr{border:0; border-top:1px solid var(--line); margin:18px 0}
+.callout{
+  margin:14px 0;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid rgba(125,255,178,.35);
+  background:rgba(125,255,178,.06);
+}
+.callout.warn{
+  border-color: rgba(255,204,102,.35);
+  background: rgba(255,204,102,.07);
+}
+pre{
+  position:relative;
+  padding:14px 14px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(10,14,19,.85);
+  overflow:auto;
+}
+code{font-family:var(--mono); font-size:12.5px}
+.copy{
+  position:absolute;
+  right:10px;
+  top:10px;
+  font-size:12px;
+  padding:6px 9px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.16);
+  background: rgba(15,23,32,.8);
+  color: var(--text);
+  cursor:pointer;
+}
+.copy:hover{border-color:rgba(106,228,255,.55)}
+.kbd{
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(10,14,19,.55);
+}
+details{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  background: rgba(10,14,19,.5);
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+summary{
+  cursor:pointer;
+  font-weight: 650;
+  color: var(--text);
+}
+.filepath{color: var(--muted); font-family: var(--mono); font-size: 12px}
+footer{
+  max-width:1050px;
+  margin: 22px auto 0;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 0 18px;
+}
+@media (max-width: 980px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:sticky; top:0; z-index:2}
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="title">OpenClaw Agent Guide</div>
+          <div class="subtitle">Local-first (Ollama) + Cloud (OpenAI)</div>
+        </div>
+      </div>
+
+      <div class="search">
+        <input id="tocSearch" placeholder="Search sections…" />
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="expandAll" title="Open all file blocks">Expand all</button>
+        <button class="btn" id="collapseAll" title="Close all file blocks">Collapse all</button>
+      </div>
+
+      <nav class="toc" aria-label="Table of contents">
+        <a href="#top"><div><b>Top</b></div><small>Intro</small></a>
+        <a href="#1-overview-what-we-re-building-how-it-works"><div><b>1. Overview (what we’re building + how it works)</b></div><small>Jump</small></a>
+<a href="#2-mac-mini-setup-homebrew-python-git-vs-code-optional"><div><b>2. Mac mini Setup (Homebrew, Python, Git, VS Code optional)</b></div><small>Jump</small></a>
+<a href="#3-project-setup-folder-tree-files"><div><b>3. Project Setup (folder tree + files)</b></div><small>Jump</small></a>
+<a href="#4-install-configure-openclaw-step-by-step"><div><b>4. Install &amp; Configure OpenClaw (step-by-step)</b></div><small>Jump</small></a>
+<a href="#5-mode-a-offline-local-implementation"><div><b>5. Mode A — Offline/Local Implementation</b></div><small>Jump</small></a>
+<a href="#5-1-install-local-model-runtime-mac"><div><b>5.1 Install local model runtime (Mac)</b></div><small>Jump</small></a>
+<a href="#5-2-download-models-llm-embeddings"><div><b>5.2 Download models (LLM + embeddings)</b></div><small>Jump</small></a>
+<a href="#5-3-configure-openclaw-for-local-inference"><div><b>5.3 Configure OpenClaw for local inference</b></div><small>Jump</small></a>
+<a href="#5-4-run-the-agent-offline-commands-expected-output"><div><b>5.4 Run the agent offline (commands + expected output)</b></div><small>Jump</small></a>
+<a href="#6-mode-b-cloud-openai-implementation"><div><b>6. Mode B — Cloud/OpenAI Implementation</b></div><small>Jump</small></a>
+<a href="#6-1-create-openai-key-store-in-env"><div><b>6.1 Create OpenAI key + store in .env</b></div><small>Jump</small></a>
+<a href="#6-2-configure-openclaw-for-openai-chat-embeddings"><div><b>6.2 Configure OpenClaw for OpenAI chat + embeddings</b></div><small>Jump</small></a>
+<a href="#6-3-run-the-agent-in-cloud-mode"><div><b>6.3 Run the agent in cloud mode</b></div><small>Jump</small></a>
+<a href="#7-tools-file-ingest-notes-retrieval"><div><b>7. Tools (file ingest, notes, retrieval)</b></div><small>Jump</small></a>
+<a href="#8-knowledge-intake-updating-later"><div><b>8. Knowledge Intake &amp; Updating Later</b></div><small>Jump</small></a>
+<a href="#8-1-drop-files-here-workflow"><div><b>8.1 “Drop files here” workflow</b></div><small>Jump</small></a>
+<a href="#8-2-rebuild-index-command"><div><b>8.2 “Rebuild index” command</b></div><small>Jump</small></a>
+<a href="#8-3-how-to-verify-new-knowledge-is-searchable"><div><b>8.3 How to verify new knowledge is searchable</b></div><small>Jump</small></a>
+<a href="#9-testing-smoke-tests-minimal-unit-tests"><div><b>9. Testing (smoke tests + minimal unit tests)</b></div><small>Jump</small></a>
+<a href="#10-troubleshooting-common-issues-fixes"><div><b>10. Troubleshooting (common issues + fixes)</b></div><small>Jump</small></a>
+<a href="#11-clone-create-new-agents-repeatable-recipe"><div><b>11. Clone &amp; Create New Agents (repeatable recipe)</b></div><small>Jump</small></a>
+<a href="#12-security-best-practices-privacy-keys-local-data"><div><b>12. Security &amp; Best Practices (privacy, keys, local data)</b></div><small>Jump</small></a>
+<a href="#13-final-checklist-copyable"><div><b>13. Final Checklist (copyable)</b></div><small>Jump</small></a>
+<a href="#project-files-full-contents"><div><b>Project Files (full contents)</b></div><small>Jump</small></a>
+      </nav>
+      <hr>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">
+        <b>Offline tip:</b> Save this file locally and open it in your browser.
+        Copy buttons use your clipboard.
+      </div>
+    </aside>
+
+    <main class="content">
+      
+<div class="card" id="top">
+  <h1>OpenClaw Agent: Local-first + OpenAI (Mac mini) — Full Guide</h1>
+  <p class="filepath">Single-file HTML • Copy buttons • Sidebar navigation • Collapsible file contents</p>
+  <div class="callout">
+    <b>How to use this page:</b>
+    <ol>
+      <li>Use the left sidebar to jump to a section.</li>
+      <li>Click <span class="kbd">Copy</span> on any code block to copy it.</li>
+      <li>In “Project Files”, open each file and copy-paste into your project folder.</li>
+    </ol>
+  </div>
+</div>
+<div class="card" id="1-overview-what-we-re-building-how-it-works"><h2>1. Overview (what we’re building + how it works)</h2>
+<p>You’re building a <b>robust OpenClaw agent project</b> that can run in <b>two switchable modes</b> using <b>one config file</b>:</p>
+<ul>
+  <li><b>Mode A (Offline / Local-first)</b>
+    <ul>
+      <li>Chat/inference: local LLM via <b>Ollama</b> (OpenClaw talks to Ollama)</li>
+      <li>Embeddings: local embeddings via Ollama</li>
+      <li>Vector DB: local <b>Chroma</b> persisted on disk</li>
+      <li><b>No internet required for inference once models are downloaded</b></li>
+    </ul>
+  </li>
+  <li><b>Mode B (Cloud / OpenAI)</b>
+    <ul>
+      <li>Chat/inference: OpenAI API via OpenClaw</li>
+      <li>Embeddings: OpenAI embeddings (e.g. text-embedding-3-*)</li>
+      <li>Vector DB: same local Chroma (knowledge stays on your Mac unless you change it)</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Architecture (same in both modes)</h3>
+<p><b>OpenClaw = agent runtime + tool execution loop</b>. Your project adds a Knowledge Base (KB) subsystem:</p>
+<ul>
+  <li><code>knowledge/raw/</code> → drop PDFs/TXT/MD/DOCX</li>
+  <li><code>knowledge/notes/notes.md</code> → append-only notes</li>
+  <li><code>scripts/kb_cli.py</code> → ingest/rebuild/search commands</li>
+  <li><code>knowledge/index/chroma/</code> → persistent Chroma DB</li>
+  <li><code>knowledge/index/manifest.json</code> → versioned record of what’s ingested</li>
+</ul>
+
+<h3>Minimum tool surface</h3>
+<ol>
+  <li><b>File ingest</b> (PDF/TXT/MD/DOCX)</li>
+  <li><b>Notes tool</b> (append-only notes that become searchable)</li>
+  <li><b>Retrieval tool</b> (RAG search over knowledge base)</li>
+  <li><b>Optional web tool</b> (ONLY enabled in cloud mode)</li>
+</ol>
+
+<div class="callout">
+  <b>Assumptions:</b>
+  <ul>
+    <li>Apple Silicon Mac mini (Intel differences: Homebrew path and model sizing)</li>
+    <li>Use OpenClaw Control UI for first chat (simplest path)</li>
+  </ul>
+</div>
+</div><div class="card" id="2-mac-mini-setup-homebrew-python-git-vs-code-optional"><h2>2. Mac mini Setup (Homebrew, Python, Git, VS Code optional)</h2>
+<h3>2.1 Open Terminal</h3>
+<ul>
+  <li>Finder → Applications → Utilities → Terminal</li>
+  <li>Or press ⌘+Space, type “Terminal”, press Enter</li>
+</ul>
+
+<h3>2.2 Install Apple command line tools</h3>
+<pre><code class="language-bash">xcode-select --install</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">xcode-select -p</code></pre>
+<p>Good output looks like a path, e.g. <code>/Library/Developer/CommandLineTools</code></p>
+
+<h3>2.3 Install Homebrew</h3>
+<pre><code class="language-bash">/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">brew --version</code></pre>
+
+<h3>2.4 Install Git + Python</h3>
+<pre><code class="language-bash">brew install git python@3.11</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">git --version
+python3 --version
+pip3 --version</code></pre>
+
+<h3>2.5 (Optional) Install VS Code</h3>
+<p>Install VS Code normally; optionally add <code>code</code> command via Command Palette:
+<code>Shell Command: Install 'code' command in PATH</code></p>
+</div><div class="card" id="3-project-setup-folder-tree-files"><h2>3. Project Setup (folder tree + files)</h2>
+<h3>3.1 Create the project folder</h3>
+<pre><code class="language-bash">mkdir -p ~/Projects
+cd ~/Projects
+mkdir openclaw-agent-template
+cd openclaw-agent-template</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">pwd</code></pre>
+
+<h3>3.2 Create Python virtual environment</h3>
+<pre><code class="language-bash">python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">which python
+python --version</code></pre>
+
+<h3>3.3 Create folders</h3>
+<pre><code class="language-bash">mkdir -p   scripts   kb   knowledge/raw   knowledge/notes   knowledge/processed   knowledge/index/chroma   knowledge/snapshots   logs   tests   .openclaw/extensions/kb-tools</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">find . -maxdepth 3 -type d | sort</code></pre>
+
+<h3>3.4 Final folder tree</h3>
+<pre><code class="language-text">openclaw-agent-template/
+  AGENTS.md
+  SOUL.md
+  TOOLS.md
+  IDENTITY.md
+  agent_config.yaml
+  requirements.txt
+  Makefile
+  .env.example
+  .gitignore
+
+  .openclaw/
+    extensions/
+      kb-tools/
+        openclaw.plugin.json
+        index.ts
+        README.md
+
+  scripts/
+    kb_cli.py
+    kb_web.py
+    sync_openclaw.py
+    set_mode.py
+
+  kb/
+    __init__.py
+    config.py
+    logging_setup.py
+    loaders.py
+    chunker.py
+    embedder.py
+    vectordb.py
+    manifest.py
+    pipeline.py
+
+  knowledge/
+    raw/
+    notes/
+      notes.md
+    processed/
+    index/
+      chroma/
+      manifest.json
+    snapshots/
+
+  logs/
+    .gitkeep
+
+  tests/
+    test_chunker.py
+    test_manifest.py
+    test_smoke_kb.py</code></pre>
+
+<div class="callout warn">
+  <b>Next:</b> Scroll to “Project Files” below and copy-paste each file’s full contents into your project.
+</div>
+</div><div class="card" id="4-install-configure-openclaw-step-by-step"><h2>4. Install &amp; Configure OpenClaw (step-by-step)</h2>
+<p>Install OpenClaw and run the onboarding wizard, then sync this project as the workspace.</p>
+
+<h3>4.1 Install OpenClaw</h3>
+<pre><code class="language-bash">curl -fsSL https://openclaw.ai/install.sh | bash</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">openclaw --version</code></pre>
+
+<h3>4.2 Run onboarding wizard (beginner path)</h3>
+<pre><code class="language-bash">openclaw onboard --install-daemon</code></pre>
+<ul>
+  <li>Choose <b>Local Gateway</b></li>
+  <li>Choose <b>Control UI</b> for chat</li>
+</ul>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">openclaw dashboard</code></pre>
+
+<h3>4.3 Sync this project to OpenClaw</h3>
+<pre><code class="language-bash">make sync</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">openclaw config get agents.defaults.workspace</code></pre>
+
+<h3>4.4 Verify KB tool works</h3>
+<pre><code class="language-bash">make kb-search q="hello"</code></pre>
+<p>Good output: either zero results (before ingest) or a friendly error telling you to ingest.</p>
+</div><div class="card" id="5-mode-a-offline-local-implementation"><h2>5. Mode A — Offline/Local Implementation</h2>
+<p>This mode uses <b>Ollama</b> for chat + embeddings and Chroma for local vector storage. Once models are pulled, inference works without internet.</p>
+</div><div class="card" id="5-1-install-local-model-runtime-mac"><h2>5.1 Install local model runtime (Mac)</h2>
+<pre><code class="language-bash">curl -fsSL https://ollama.com/install.sh | sh</code></pre>
+
+<p>Start Ollama (leave this running):</p>
+<pre><code class="language-bash">ollama serve</code></pre>
+
+<p><b>Checkpoint (new Terminal window):</b></p>
+<pre><code class="language-bash">curl http://localhost:11434/api/tags</code></pre>
+<p>Good output: JSON (model list may be empty until you pull models).</p>
+</div><div class="card" id="5-2-download-models-llm-embeddings"><h2>5.2 Download models (LLM + embeddings)</h2>
+<h3>LLM</h3>
+<pre><code class="language-bash">ollama pull gpt-oss:20b</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">ollama list</code></pre>
+
+<h3>Embeddings model</h3>
+<pre><code class="language-bash">ollama pull nomic-embed-text</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">ollama list | grep nomic</code></pre>
+</div><div class="card" id="5-3-configure-openclaw-for-local-inference"><h2>5.3 Configure OpenClaw for local inference</h2>
+<pre><code class="language-bash">make mode-local</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">openclaw config get agents.defaults.model.primary</code></pre>
+<p>Good output: <code>ollama/gpt-oss:20b</code></p>
+
+<p>If changes don’t apply:</p>
+<pre><code class="language-bash">openclaw gateway restart</code></pre>
+</div><div class="card" id="5-4-run-the-agent-offline-commands-expected-output"><h2>5.4 Run the agent offline (commands + expected output)</h2>
+<h3>Ingest a test file</h3>
+<pre><code class="language-bash">echo "OpenClaw KnowledgeBot test: The launch code is 12345." &gt; knowledge/raw/test.txt
+make kb-ingest</code></pre>
+<p>Good output includes: <code>updated_docs: 1</code> and a positive <code>total_chunks</code>.</p>
+
+<h3>Verify KB search</h3>
+<pre><code class="language-bash">make kb-search q="launch code"</code></pre>
+
+<h3>Chat (offline)</h3>
+<pre><code class="language-bash">openclaw agent --message "What is the launch code? Use kb_search."</code></pre>
+<p>Expected: The agent answers <code>12345</code> and references <code>knowledge/raw/test.txt</code>.</p>
+</div><div class="card" id="6-mode-b-cloud-openai-implementation"><h2>6. Mode B — Cloud/OpenAI Implementation</h2>
+<p>This mode uses OpenAI for chat + embeddings. Your Chroma DB still lives locally unless you change it.</p>
+</div><div class="card" id="6-1-create-openai-key-store-in-env"><h2>6.1 Create OpenAI key + store in .env</h2>
+<p>Edit <code>.env</code> and set your key:</p>
+<pre><code class="language-bash">cp .env.example .env
+nano .env</code></pre>
+<ul>
+  <li>Replace <code>OPENAI_API_KEY="sk-REPLACE_ME"</code> with your real key</li>
+  <li>Save: Ctrl+O, Enter; Exit: Ctrl+X</li>
+</ul>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">cat .env | grep OPENAI_API_KEY</code></pre>
+</div><div class="card" id="6-2-configure-openclaw-for-openai-chat-embeddings"><h2>6.2 Configure OpenClaw for OpenAI chat + embeddings</h2>
+<pre><code class="language-bash">make mode-cloud</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">openclaw config get agents.defaults.model.primary</code></pre>
+
+<p>Expected: <code>openai/gpt-5.1-codex</code></p>
+</div><div class="card" id="6-3-run-the-agent-in-cloud-mode"><h2>6.3 Run the agent in cloud mode</h2>
+<p><b>Important:</b> If you previously built the index in local mode, rebuild it for OpenAI embeddings.</p>
+<pre><code class="language-bash">make kb-rebuild</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">make kb-search q="launch code"</code></pre>
+
+<p>Chat:</p>
+<pre><code class="language-bash">openclaw agent --message "Answer from my KB: what is the launch code? Use kb_search."</code></pre>
+</div><div class="card" id="7-tools-file-ingest-notes-retrieval"><h2>7. Tools (file ingest, notes, retrieval)</h2>
+<p>You have two tool layers:</p>
+<ul>
+  <li><b>OpenClaw built-ins</b> (web tools are cloud-only in this template): <code>web_search</code>, <code>web_fetch</code></li>
+  <li><b>Your KB plugin tools</b>: <code>kb_ingest</code>, <code>kb_add_note</code>, <code>kb_search</code></li>
+</ul>
+
+<p><b>Observability:</b></p>
+<ul>
+  <li>KB logs: <code>logs/kb.log</code></li>
+  <li>OpenClaw shows tool calls in its UI/CLI output</li>
+</ul>
+</div><div class="card" id="8-knowledge-intake-updating-later"><h2>8. Knowledge Intake &amp; Updating Later</h2>
+<p>This is the core workflow for adding knowledge without rewriting anything.</p>
+</div><div class="card" id="8-1-drop-files-here-workflow"><h2>8.1 “Drop files here” workflow</h2>
+<p>Put files into <code>knowledge/raw/</code> (PDF/TXT/MD/DOCX supported):</p>
+<pre><code class="language-bash">cp ~/Downloads/SomeDoc.pdf knowledge/raw/</code></pre>
+
+<p><b>Checkpoint:</b></p>
+<pre><code class="language-bash">ls -la knowledge/raw</code></pre>
+</div><div class="card" id="8-2-rebuild-index-command"><h2>8.2 “Rebuild index” command</h2>
+<p>Incremental ingest (daily workflow):</p>
+<pre><code class="language-bash">make kb-ingest</code></pre>
+
+<p>Full rebuild (after changing chunking/embeddings mode):</p>
+<pre><code class="language-bash">make kb-rebuild</code></pre>
+</div><div class="card" id="8-3-how-to-verify-new-knowledge-is-searchable"><h2>8.3 How to verify new knowledge is searchable</h2>
+<pre><code class="language-bash">make kb-search q="a phrase you know is in the new doc"</code></pre>
+
+<p>Ask OpenClaw to use retrieval:</p>
+<pre><code class="language-bash">openclaw agent --message "Search my KB for: &lt;that phrase&gt;. Use kb_search and show sources."</code></pre>
+</div><div class="card" id="9-testing-smoke-tests-minimal-unit-tests"><h2>9. Testing (smoke tests + minimal unit tests)</h2>
+<pre><code class="language-bash">make test</code></pre>
+<p>Expected: pytest runs. Some tests intentionally tolerate “Ollama not running” with a helpful error string.</p>
+</div><div class="card" id="10-troubleshooting-common-issues-fixes"><h2>10. Troubleshooting (common issues + fixes)</h2>
+<h3>Homebrew</h3>
+<ul>
+  <li><b>brew: command not found</b> → close Terminal, reopen; ensure /opt/homebrew is on PATH (Apple Silicon)</li>
+</ul>
+
+<h3>Python / venv</h3>
+<pre><code class="language-bash">source .venv/bin/activate
+make install</code></pre>
+
+<h3>Ollama</h3>
+<ul>
+  <li><b>connection refused</b> → run <code>ollama serve</code></li>
+</ul>
+<pre><code class="language-bash">curl http://localhost:11434/api/tags</code></pre>
+
+<h3>OpenClaw</h3>
+<ul>
+  <li><b>config changes not applied</b> → restart gateway</li>
+</ul>
+<pre><code class="language-bash">openclaw gateway restart</code></pre>
+
+<h3>OpenAI auth errors</h3>
+<ul>
+  <li>Check <code>.env</code> has your real key</li>
+</ul>
+<pre><code class="language-bash">python -c "from dotenv import load_dotenv; load_dotenv(); import os; print(os.environ.get('OPENAI_API_KEY','')[:10])"</code></pre>
+</div><div class="card" id="11-clone-create-new-agents-repeatable-recipe"><h2>11. Clone &amp; Create New Agents (repeatable recipe)</h2>
+<h3>Fast clone</h3>
+<pre><code class="language-bash">cp -R ~/Projects/openclaw-agent-template ~/Projects/my-new-agent
+cd ~/Projects/my-new-agent</code></pre>
+
+<h3>Customize</h3>
+<ul>
+  <li>Edit <code>agent_config.yaml</code> (name/role/description)</li>
+  <li>Edit <code>SOUL.md</code>, <code>AGENTS.md</code>, <code>TOOLS.md</code></li>
+</ul>
+
+<h3>Sync + ingest</h3>
+<pre><code class="language-bash">python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+make sync
+openclaw gateway restart
+make kb-ingest</code></pre>
+</div><div class="card" id="12-security-best-practices-privacy-keys-local-data"><h2>12. Security &amp; Best Practices (privacy, keys, local data)</h2>
+<ul>
+  <li>Secrets in <code>.env</code>; never commit it (already ignored)</li>
+  <li>Local mode denies web tools to keep offline behavior predictable</li>
+  <li>Back up: <code>knowledge/raw</code>, <code>knowledge/notes/notes.md</code>, config + prompt files</li>
+</ul>
+</div><div class="card" id="13-final-checklist-copyable"><h2>13. Final Checklist (copyable)</h2>
+<h3>A) First-time setup</h3>
+<ul>
+  <li>[ ] xcode-select --install</li>
+  <li>[ ] Install Homebrew</li>
+  <li>[ ] brew install git python@3.11</li>
+  <li>[ ] Create venv + install deps</li>
+  <li>[ ] Install OpenClaw + onboard</li>
+  <li>[ ] make sync</li>
+</ul>
+
+<h3>B) Mode A</h3>
+<ul>
+  <li>[ ] ollama serve</li>
+  <li>[ ] ollama pull gpt-oss:20b</li>
+  <li>[ ] ollama pull nomic-embed-text</li>
+  <li>[ ] make mode-local</li>
+  <li>[ ] make kb-ingest</li>
+</ul>
+
+<h3>C) Mode B</h3>
+<ul>
+  <li>[ ] Put OPENAI_API_KEY in .env</li>
+  <li>[ ] make mode-cloud</li>
+  <li>[ ] make kb-rebuild</li>
+</ul>
+
+<h3>D) Production-ish</h3>
+<ul>
+  <li>[ ] Tight tool allow/deny lists</li>
+  <li>[ ] Backups</li>
+  <li>[ ] make test before big changes</li>
+</ul>
+</div><div class="card" id="project-files-full-contents"><h2>Project Files (full contents)</h2>
+<p>Open each file below, click <b>Copy</b>, then paste into the matching path in your project folder.</p>
+<div class="callout warn"><b>Tip:</b> Use <span class="kbd">Expand all</span> in the sidebar, then copy file-by-file.</div>
+
+<details>
+  <summary>.env.example <span class="filepath">(11 lines)</span></summary>
+  <pre><code class="language-text"># Copy to .env and fill in values as needed.
+# NEVER commit .env. It contains secrets.
+
+# Mode B (OpenAI)
+OPENAI_API_KEY="sk-REPLACE_ME"
+
+# Optional (Cloud mode web search via Brave, used by OpenClaw web_search)
+BRAVE_API_KEY="REPLACE_ME"
+
+# Optional: if your Python is not python3, set this for the OpenClaw plugin runner
+KB_PYTHON="python3"
+</code></pre>
+</details>
+
+
+<details>
+  <summary>.gitignore <span class="filepath">(19 lines)</span></summary>
+  <pre><code class="language-text"># Python
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Logs
+logs/*.log
+
+# Knowledge index artifacts (you may choose to version these later)
+knowledge/index/chroma/
+knowledge/index/manifest.json
+knowledge/processed/
+knowledge/snapshots/
+
+# macOS
+.DS_Store
+</code></pre>
+</details>
+
+
+<details>
+  <summary>.openclaw/extensions/kb-tools/README.md <span class="filepath">(14 lines)</span></summary>
+  <pre><code class="language-text"># kb-tools (OpenClaw plugin)
+
+This plugin exposes three tools to the OpenClaw agent:
+
+- kb_search
+- kb_add_note
+- kb_ingest
+
+They shell out to: scripts/kb_cli.py
+
+If tools fail:
+- Activate venv: source .venv/bin/activate
+- Install deps: make install
+- Sync OpenClaw config: make sync
+</code></pre>
+</details>
+
+
+<details>
+  <summary>.openclaw/extensions/kb-tools/index.ts <span class="filepath">(84 lines)</span></summary>
+  <pre><code class="language-text">import { Type } from "@sinclair/typebox";
+import { execFile } from "node:child_process";
+import path from "node:path";
+
+function runPython(args: string[], timeoutMs: number): Promise&lt;string&gt; {
+  return new Promise((resolve, reject) =&gt; {
+    const py = process.env.KB_PYTHON || "python3";
+    const scriptPath = path.resolve(process.cwd(), "scripts", "kb_cli.py");
+
+    execFile(py, [scriptPath, ...args], { timeout: timeoutMs }, (err, stdout, stderr) =&gt; {
+      if (err) {
+        const msg =
+          [
+            "KB tool failed.",
+            "",
+            `Command: ${py} ${scriptPath} ${args.join(" ")}`,
+            "",
+            "stderr:",
+            (stderr || "").trim(),
+            "",
+            "Common fixes:",
+            "1) Activate venv: source .venv/bin/activate",
+            "2) Install deps: make install",
+            "3) Ensure Python is python3. If not, set KB_PYTHON in .env",
+            "4) Re-run: make sync",
+          ].join("\n");
+        return reject(new Error(msg));
+      }
+      resolve((stdout || "").trim());
+    });
+  });
+}
+
+export default function (api: any) {
+  api.registerTool(
+    {
+      name: "kb_search",
+      description: "Search the local Knowledge Base (RAG). Returns top matching snippets and sources.",
+      parameters: Type.Object({
+        query: Type.String({ minLength: 1 }),
+        top_k: Type.Optional(Type.Integer({ minimum: 1, maximum: 20 })),
+      }),
+      async execute(_id: string, params: any) {
+        const topK = params.top_k ?? 5;
+        const out = await runPython(["search", "--query", params.query, "--top-k", String(topK), "--json"], 120_000);
+        return { content: [{ type: "text", text: out }] };
+      },
+    },
+    { optional: true }
+  );
+
+  api.registerTool(
+    {
+      name: "kb_add_note",
+      description: "Append an note to knowledge/notes/notes.md (append-only) and optionally ingest it.",
+      parameters: Type.Object({
+        text: Type.String({ minLength: 1 }),
+        ingest: Type.Optional(Type.Boolean()),
+      }),
+      async execute(_id: string, params: any) {
+        const ingest = params.ingest === true ? ["--ingest"] : [];
+        const out = await runPython(["add-note", "--text", params.text, "--json", ...ingest], 120_000);
+        return { content: [{ type: "text", text: out }] };
+      },
+    },
+    { optional: true }
+  );
+
+  api.registerTool(
+    {
+      name: "kb_ingest",
+      description: "Ingest/rebuild the KB index from files in knowledge/raw and knowledge/notes.",
+      parameters: Type.Object({
+        rebuild: Type.Optional(Type.Boolean()),
+      }),
+      async execute(_id: string, params: any) {
+        const cmd = params.rebuild === true ? "rebuild" : "ingest";
+        const out = await runPython([cmd, "--json"], 15 * 60_000);
+        return { content: [{ type: "text", text: out }] };
+      },
+    },
+    { optional: true }
+  );
+}
+</code></pre>
+</details>
+
+
+<details>
+  <summary>.openclaw/extensions/kb-tools/openclaw.plugin.json <span class="filepath">(11 lines)</span></summary>
+  <pre><code class="language-text">{
+  "id": "kb-tools",
+  "name": "Knowledge Base Tools",
+  "description": "KB ingest, notes, and retrieval tools backed by a local Python pipeline.",
+  "version": "1.0.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
+</code></pre>
+</details>
+
+
+<details>
+  <summary>AGENTS.md <span class="filepath">(25 lines)</span></summary>
+  <pre><code class="language-text"># AGENTS.md — KnowledgeBot
+
+You are **KnowledgeBot**, a local-first retrieval assistant.
+
+## Primary mission
+1. Answer questions using the user's Knowledge Base (KB) first.
+2. If the KB does not contain enough info, say so clearly and ask what to add.
+3. Be explicit and beginner-friendly.
+
+## Tool policy (important)
+- Prefer the KB tools:
+  - `kb_search` to retrieve relevant knowledge.
+  - `kb_add_note` to save user notes.
+  - `kb_ingest` only when explicitly requested.
+- Do NOT use web tools unless they are enabled and the user asks (cloud mode only).
+
+## Safety rules
+- Never reveal secrets from `.env` or `~/.openclaw/`.
+- Never suggest running destructive shell commands.
+- If a request looks like it could delete data, require confirmation.
+
+## Response style
+- Use short steps.
+- Always include “what to do next”.
+- When you use KB results, cite the source filenames shown by `kb_search`.
+</code></pre>
+</details>
+
+
+<details>
+  <summary>IDENTITY.md <span class="filepath">(6 lines)</span></summary>
+  <pre><code class="language-text"># IDENTITY.md
+
+name: KnowledgeBot
+emoji: 🧠
+theme: "local-first knowledge assistant"
+avatar: ""
+</code></pre>
+</details>
+
+
+<details>
+  <summary>Makefile <span class="filepath">(56 lines)</span></summary>
+  <pre><code class="language-text">SHELL := /bin/bash
+
+.PHONY: help venv install mode-local mode-cloud sync kb-ingest kb-rebuild kb-search kb-add-note kb-web chat-ui chat-cli test
+
+help:
+	@echo "Commands:"
+	@echo "  make install              - install python deps"
+	@echo "  make mode-local           - set Mode A (Ollama local) + sync OpenClaw"
+	@echo "  make mode-cloud           - set Mode B (OpenAI) + sync OpenClaw"
+	@echo "  make sync                 - sync agent_config.yaml -&gt; OpenClaw config"
+	@echo "  make kb-ingest            - ingest new/changed docs from knowledge/raw"
+	@echo "  make kb-rebuild           - rebuild vector index from scratch"
+	@echo "  make kb-search q='...'    - search KB"
+	@echo "  make kb-add-note t='...'  - append note + (optional) ingest notes"
+	@echo "  make kb-web               - run optional KB web UI on http://127.0.0.1:8099"
+	@echo "  make chat-ui              - open OpenClaw dashboard (web UI)"
+	@echo "  make chat-cli m='...'     - run one OpenClaw CLI turn"
+	@echo "  make test                 - run pytest"
+
+install:
+	@source .venv/bin/activate &amp;&amp; pip install -r requirements.txt
+
+mode-local:
+	@source .venv/bin/activate &amp;&amp; python scripts/set_mode.py local
+	@source .venv/bin/activate &amp;&amp; python scripts/sync_openclaw.py
+
+mode-cloud:
+	@source .venv/bin/activate &amp;&amp; python scripts/set_mode.py openai
+	@source .venv/bin/activate &amp;&amp; python scripts/sync_openclaw.py
+
+sync:
+	@source .venv/bin/activate &amp;&amp; python scripts/sync_openclaw.py
+
+kb-ingest:
+	@source .venv/bin/activate &amp;&amp; python scripts/kb_cli.py ingest
+
+kb-rebuild:
+	@source .venv/bin/activate &amp;&amp; python scripts/kb_cli.py rebuild
+
+kb-search:
+	@source .venv/bin/activate &amp;&amp; python scripts/kb_cli.py search --query "$(q)" --top-k 5
+
+kb-add-note:
+	@source .venv/bin/activate &amp;&amp; python scripts/kb_cli.py add-note --text "$(t)" --ingest
+
+kb-web:
+	@source .venv/bin/activate &amp;&amp; python scripts/kb_web.py
+
+chat-ui:
+	@openclaw dashboard
+
+chat-cli:
+	@openclaw agent --message "$(m)" --timeout 120
+
+test:
+	@source .venv/bin/activate &amp;&amp; pytest -q
+</code></pre>
+</details>
+
+
+<details>
+  <summary>SOUL.md <span class="filepath">(17 lines)</span></summary>
+  <pre><code class="language-text"># SOUL.md — KnowledgeBot
+
+You are KnowledgeBot.
+
+You are calm, systematic, and very explicit.
+You assume the user is a complete beginner and might be nervous.
+You explain what you are doing and what “success” looks like.
+
+Values:
+- Privacy-first: prefer local knowledge and local inference when configured.
+- Safety: avoid risky actions. Ask before any irreversible step.
+- Clarity: no jargon without defining it.
+
+Default workflow:
+1) Restate the user goal in plain language.
+2) If the KB might help, run `kb_search`.
+3) Answer using retrieved context. If missing, propose exactly what to add.
+</code></pre>
+</details>
+
+
+<details>
+  <summary>TOOLS.md <span class="filepath">(35 lines)</span></summary>
+  <pre><code class="language-text"># TOOLS.md — KnowledgeBot Tools
+
+## Knowledge Base tools (preferred)
+
+### 1) kb_search
+Use this to search the KB for relevant passages.
+- Input: a natural language query and (optionally) top_k.
+- Output: ranked snippets with source file paths.
+
+When to use:
+- Any time the user asks about their docs/notes.
+- Before answering “I don't know”.
+
+### 2) kb_add_note
+Use this to save user notes as append-only memory.
+- Input: text to append.
+- Output: confirmation + where it was saved.
+
+When to use:
+- User says “remember this”, “note that”, “save this”, “add to KB”.
+
+### 3) kb_ingest
+Use this only when explicitly asked to ingest/rebuild knowledge.
+- Typically the user runs `make kb-ingest` or `make kb-rebuild`.
+- This tool exists for completeness, but do not run it automatically.
+
+## Web tools (cloud mode only)
+OpenClaw provides:
+- `web_search`
+- `web_fetch`
+
+Only use web tools if:
+- They are enabled, AND
+- The user asks for web lookups, AND
+- The KB does not contain the answer.
+</code></pre>
+</details>
+
+
+<details>
+  <summary>agent_config.yaml <span class="filepath">(52 lines)</span></summary>
+  <pre><code class="language-text">agent:
+  name: "KnowledgeBot"
+  role: "Local-first RAG assistant"
+  description: "Answers questions using your private knowledge base (documents + notes)."
+
+mode: "local"  # "local" or "openai"
+
+openclaw:
+  workspace: "."
+
+  models:
+    local_primary: "ollama/gpt-oss:20b"
+    cloud_primary: "openai/gpt-5.1-codex"
+
+  tools:
+    profile: "minimal"
+    deny_in_local: ["web_search", "web_fetch", "browser"]
+    allow_in_cloud: ["web_search", "web_fetch"]
+
+kb:
+  paths:
+    raw_dir: "knowledge/raw"
+    notes_file: "knowledge/notes/notes.md"
+    processed_dir: "knowledge/processed"
+    index_dir: "knowledge/index"
+    chroma_dir: "knowledge/index/chroma"
+    manifest_path: "knowledge/index/manifest.json"
+    snapshots_dir: "knowledge/snapshots"
+    logs_dir: "logs"
+
+  chunking:
+    chunk_size: 900
+    chunk_overlap: 150
+
+  retrieval:
+    top_k_default: 5
+
+  embeddings:
+    local:
+      provider: "ollama"
+      model: "nomic-embed-text"
+      base_url: "http://127.0.0.1:11434"
+      timeout_seconds: 60
+
+    openai:
+      provider: "openai"
+      model: "text-embedding-3-small"
+      timeout_seconds: 60
+
+reliability:
+  retries: 3
+  retry_backoff_seconds: 1.5
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/__init__.py <span class="filepath">(10 lines)</span></summary>
+  <pre><code class="language-text">__all__ = [
+    "config",
+    "logging_setup",
+    "loaders",
+    "chunker",
+    "embedder",
+    "vectordb",
+    "manifest",
+    "pipeline",
+]
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/chunker.py <span class="filepath">(37 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import List
+
+
+@dataclass(frozen=True)
+class Chunk:
+    text: str
+    chunk_index: int
+
+
+def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -&gt; List[Chunk]:
+    # Simple character-based chunker that is predictable and beginner-proof.
+    # You can replace with token-based chunking later.
+    t = (text or "").strip()
+    if not t:
+        return []
+
+    step = chunk_size - chunk_overlap
+    if step &lt;= 0:
+        raise ValueError("chunk_size must be &gt; chunk_overlap")
+
+    chunks: List[Chunk] = []
+    start = 0
+    idx = 0
+    while start &lt; len(t):
+        end = min(start + chunk_size, len(t))
+        piece = t[start:end].strip()
+        if piece:
+            chunks.append(Chunk(text=piece, chunk_index=idx))
+            idx += 1
+        if end == len(t):
+            break
+        start += step
+
+    return chunks
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/config.py <span class="filepath">(169 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, Literal, Optional
+
+import yaml
+
+
+Mode = Literal["local", "openai"]
+
+
+@dataclass(frozen=True)
+class Paths:
+    raw_dir: Path
+    notes_file: Path
+    processed_dir: Path
+    index_dir: Path
+    chroma_dir: Path
+    manifest_path: Path
+    snapshots_dir: Path
+    logs_dir: Path
+
+
+@dataclass(frozen=True)
+class Chunking:
+    chunk_size: int
+    chunk_overlap: int
+
+
+@dataclass(frozen=True)
+class Retrieval:
+    top_k_default: int
+
+
+@dataclass(frozen=True)
+class EmbeddingProviderConfig:
+    provider: Literal["ollama", "openai"]
+    model: str
+    base_url: Optional[str] = None
+    timeout_seconds: int = 60
+
+
+@dataclass(frozen=True)
+class KBConfig:
+    paths: Paths
+    chunking: Chunking
+    retrieval: Retrieval
+    local_embeddings: EmbeddingProviderConfig
+    openai_embeddings: EmbeddingProviderConfig
+
+
+@dataclass(frozen=True)
+class OpenClawConfig:
+    workspace: str
+    local_primary: str
+    cloud_primary: str
+    tools_profile: str
+    deny_in_local: list[str]
+    allow_in_cloud: list[str]
+
+
+@dataclass(frozen=True)
+class AppConfig:
+    agent_name: str
+    agent_role: str
+    agent_description: str
+    mode: Mode
+    openclaw: OpenClawConfig
+    kb: KBConfig
+    retries: int
+    retry_backoff_seconds: float
+
+
+def _as_path(p: str) -&gt; Path:
+    return Path(p).expanduser().resolve()
+
+
+def load_config(config_path: str | Path = "agent_config.yaml") -&gt; AppConfig:
+    cp = Path(config_path).expanduser().resolve()
+    if not cp.exists():
+        raise FileNotFoundError(f"Missing config file: {cp}")
+
+    data: Dict[str, Any] = yaml.safe_load(cp.read_text(encoding="utf-8"))
+
+    agent = data.get("agent", {})
+    mode: Mode = data.get("mode", "local")
+    if mode not in ("local", "openai"):
+        raise ValueError("mode must be 'local' or 'openai'")
+
+    oc = data.get("openclaw", {})
+    oc_models = oc.get("models", {})
+    oc_tools = oc.get("tools", {})
+
+    kb = data.get("kb", {})
+    paths = kb.get("paths", {})
+    chunking = kb.get("chunking", {})
+    retrieval = kb.get("retrieval", {})
+    emb = kb.get("embeddings", {})
+    emb_local = emb.get("local", {})
+    emb_openai = emb.get("openai", {})
+
+    paths_obj = Paths(
+        raw_dir=_as_path(paths["raw_dir"]),
+        notes_file=_as_path(paths["notes_file"]),
+        processed_dir=_as_path(paths["processed_dir"]),
+        index_dir=_as_path(paths["index_dir"]),
+        chroma_dir=_as_path(paths["chroma_dir"]),
+        manifest_path=_as_path(paths["manifest_path"]),
+        snapshots_dir=_as_path(paths["snapshots_dir"]),
+        logs_dir=_as_path(paths["logs_dir"]),
+    )
+
+    chunk_obj = Chunking(
+        chunk_size=int(chunking.get("chunk_size", 900)),
+        chunk_overlap=int(chunking.get("chunk_overlap", 150)),
+    )
+    if chunk_obj.chunk_size &lt;= 0:
+        raise ValueError("chunk_size must be &gt; 0")
+    if chunk_obj.chunk_overlap &lt; 0:
+        raise ValueError("chunk_overlap must be &gt;= 0")
+    if chunk_obj.chunk_overlap &gt;= chunk_obj.chunk_size:
+        raise ValueError("chunk_overlap must be &lt; chunk_size")
+
+    retr_obj = Retrieval(top_k_default=int(retrieval.get("top_k_default", 5)))
+
+    local_emb = EmbeddingProviderConfig(
+        provider="ollama",
+        model=str(emb_local.get("model", "nomic-embed-text")),
+        base_url=str(emb_local.get("base_url", "http://127.0.0.1:11434")),
+        timeout_seconds=int(emb_local.get("timeout_seconds", 60)),
+    )
+    openai_emb = EmbeddingProviderConfig(
+        provider="openai",
+        model=str(emb_openai.get("model", "text-embedding-3-small")),
+        timeout_seconds=int(emb_openai.get("timeout_seconds", 60)),
+    )
+
+    kb_obj = KBConfig(
+        paths=paths_obj,
+        chunking=chunk_obj,
+        retrieval=retr_obj,
+        local_embeddings=local_emb,
+        openai_embeddings=openai_emb,
+    )
+
+    oc_obj = OpenClawConfig(
+        workspace=str(oc.get("workspace", ".")),
+        local_primary=str(oc_models.get("local_primary", "ollama/gpt-oss:20b")),
+        cloud_primary=str(oc_models.get("cloud_primary", "openai/gpt-5.1-codex")),
+        tools_profile=str(oc_tools.get("profile", "minimal")),
+        deny_in_local=list(oc_tools.get("deny_in_local", [])),
+        allow_in_cloud=list(oc_tools.get("allow_in_cloud", [])),
+    )
+
+    rel = data.get("reliability", {})
+    retries = int(rel.get("retries", 3))
+    backoff = float(rel.get("retry_backoff_seconds", 1.5))
+
+    return AppConfig(
+        agent_name=str(agent.get("name", "KnowledgeBot")),
+        agent_role=str(agent.get("role", "Local-first RAG assistant")),
+        agent_description=str(agent.get("description", "")),
+        mode=mode,
+        openclaw=oc_obj,
+        kb=kb_obj,
+        retries=retries,
+        retry_backoff_seconds=backoff,
+    )
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/embedder.py <span class="filepath">(88 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from typing import List, Literal, Optional
+
+import requests
+from openai import OpenAI
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+
+Provider = Literal["ollama", "openai"]
+
+
+@dataclass(frozen=True)
+class EmbedderSpec:
+    provider: Provider
+    model: str
+    base_url: Optional[str] = None
+    timeout_seconds: int = 60
+
+
+class EmbeddingError(RuntimeError):
+    pass
+
+
+def _normalize(text: str) -&gt; str:
+    return " ".join((text or "").split()).strip()
+
+
+class Embedder:
+    def __init__(self, spec: EmbedderSpec, retries: int = 3):
+        self.spec = spec
+        self.retries = retries
+
+        if spec.provider == "openai":
+            self.oa = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        else:
+            self.oa = None
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1.0, min=1, max=8))
+    def embed_one(self, text: str) -&gt; List[float]:
+        t = _normalize(text)
+        if not t:
+            raise EmbeddingError("Cannot embed empty text.")
+
+        if self.spec.provider == "openai":
+            if not os.environ.get("OPENAI_API_KEY"):
+                raise EmbeddingError("OPENAI_API_KEY is missing. Put it in .env and export it, or run Mode B sync.")
+            resp = self.oa.embeddings.create(model=self.spec.model, input=t)
+            return resp.data[0].embedding
+
+        base = (self.spec.base_url or "http://127.0.0.1:11434").rstrip("/")
+        timeout = self.spec.timeout_seconds
+
+        for endpoint in ("/api/embeddings", "/api/embed"):
+            url = f"{base}{endpoint}"
+            try:
+                r = requests.post(
+                    url,
+                    json={"model": self.spec.model, "prompt": t},
+                    timeout=timeout,
+                )
+                if r.status_code == 404:
+                    continue
+                r.raise_for_status()
+                data = r.json()
+                emb = data.get("embedding")
+                if not emb:
+                    raise EmbeddingError(f"Ollama response missing embedding field from {url}: {data}")
+                return emb
+            except requests.RequestException:
+                pass
+
+        try:
+            client = OpenAI(base_url=f"{base}/v1", api_key="ollama-local")
+            resp = client.embeddings.create(model=self.spec.model, input=t)
+            return resp.data[0].embedding
+        except Exception as e:
+            raise EmbeddingError(
+                "Failed to embed via Ollama.\n"
+                f"- Is Ollama running on {base}?\n"
+                f"- Did you pull the embeddings model: ollama pull {self.spec.model}?\n"
+                f"- Raw error: {e}"
+            ) from e
+
+    def embed_many(self, texts: List[str]) -&gt; List[List[float]]:
+        return [self.embed_one(t) for t in texts]
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/loaders.py <span class="filepath">(73 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable, List, Optional
+
+from docx import Document
+from pypdf import PdfReader
+
+
+SUPPORTED_EXTS = {".pdf", ".txt", ".md", ".docx"}
+
+
+@dataclass(frozen=True)
+class LoadedDoc:
+    source_path: Path
+    text: str
+
+
+def list_source_files(raw_dir: Path) -&gt; List[Path]:
+    files: List[Path] = []
+    if not raw_dir.exists():
+        return files
+    for p in raw_dir.rglob("*"):
+        if p.is_file() and p.suffix.lower() in SUPPORTED_EXTS:
+            files.append(p)
+    return sorted(files)
+
+
+def load_text_file(path: Path) -&gt; str:
+    return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def load_docx(path: Path) -&gt; str:
+    doc = Document(str(path))
+    parts = [p.text for p in doc.paragraphs if p.text.strip()]
+    return "\n".join(parts).strip()
+
+
+def load_pdf(path: Path) -&gt; str:
+    reader = PdfReader(str(path))
+    parts = []
+    for i, page in enumerate(reader.pages):
+        text = page.extract_text() or ""
+        text = text.strip()
+        if text:
+            parts.append(text)
+    return "\n\n".join(parts).strip()
+
+
+def load_any(path: Path) -&gt; LoadedDoc:
+    ext = path.suffix.lower()
+    if ext == ".pdf":
+        text = load_pdf(path)
+    elif ext in (".txt", ".md"):
+        text = load_text_file(path)
+    elif ext == ".docx":
+        text = load_docx(path)
+    else:
+        raise ValueError(f"Unsupported file type: {path}")
+    return LoadedDoc(source_path=path, text=text)
+
+
+def load_all(raw_dir: Path, extra_files: Optional[Iterable[Path]] = None) -&gt; List[LoadedDoc]:
+    docs: List[LoadedDoc] = []
+    for p in list_source_files(raw_dir):
+        docs.append(load_any(p))
+
+    if extra_files:
+        for p in extra_files:
+            if p.exists() and p.is_file():
+                docs.append(load_any(p))
+    return docs
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/logging_setup.py <span class="filepath">(30 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import logging
+from pathlib import Path
+
+
+def setup_logging(logs_dir: Path, name: str = "kb", level: str = "INFO") -&gt; logging.Logger:
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / f"{name}.log"
+
+    logger = logging.getLogger(name)
+    logger.setLevel(getattr(logging, level.upper(), logging.INFO))
+    logger.handlers.clear()
+
+    fmt = logging.Formatter(
+        fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    fh = logging.FileHandler(log_path, encoding="utf-8")
+    fh.setFormatter(fmt)
+    logger.addHandler(fh)
+
+    sh = logging.StreamHandler()
+    sh.setFormatter(fmt)
+    logger.addHandler(sh)
+
+    logger.propagate = False
+    logger.info("Logging initialized -&gt; %s", log_path)
+    return logger
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/manifest.py <span class="filepath">(55 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import hashlib
+import json
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+
+def sha256_file(path: Path) -&gt; str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def now_iso() -&gt; str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+@dataclass
+class Manifest:
+    path: Path
+    data: Dict[str, Any]
+
+    @classmethod
+    def load(cls, manifest_path: Path) -&gt; "Manifest":
+        if manifest_path.exists():
+            data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        else:
+            data = {"version": 1, "created_at": now_iso(), "docs": {}, "signature": None}
+        return cls(path=manifest_path, data=data)
+
+    def save(self) -&gt; None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(json.dumps(self.data, indent=2, sort_keys=True), encoding="utf-8")
+
+    def get_doc(self, source_path: str) -&gt; Optional[Dict[str, Any]]:
+        return self.data.get("docs", {}).get(source_path)
+
+    def set_signature(self, signature: str) -&gt; None:
+        self.data["signature"] = signature
+
+    def get_signature(self) -&gt; Optional[str]:
+        return self.data.get("signature")
+
+    def upsert_doc(self, source_path: str, sha256: str, num_chunks: int) -&gt; None:
+        self.data.setdefault("docs", {})
+        self.data["docs"][source_path] = {
+            "sha256": sha256,
+            "num_chunks": num_chunks,
+            "ingested_at": now_iso(),
+        }
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/pipeline.py <span class="filepath">(184 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import json
+import shutil
+from pathlib import Path
+from typing import Any, Dict
+
+from kb.chunker import chunk_text
+from kb.config import AppConfig
+from kb.embedder import Embedder, EmbedderSpec
+from kb.loaders import LoadedDoc, load_all
+from kb.logging_setup import setup_logging
+from kb.manifest import Manifest, sha256_file, now_iso
+from kb.vectordb import VectorDB
+
+
+def compute_signature(cfg: AppConfig) -&gt; str:
+    payload = {
+        "mode": cfg.mode,
+        "chunk_size": cfg.kb.chunking.chunk_size,
+        "chunk_overlap": cfg.kb.chunking.chunk_overlap,
+        "local_embed_model": cfg.kb.local_embeddings.model,
+        "openai_embed_model": cfg.kb.openai_embeddings.model,
+    }
+    return json.dumps(payload, sort_keys=True)
+
+
+def _write_processed(processed_dir: Path, doc: LoadedDoc) -&gt; Path:
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    out = processed_dir / (doc.source_path.stem + ".txt")
+    out.write_text(doc.text, encoding="utf-8")
+    return out
+
+
+def ingest(cfg: AppConfig, rebuild: bool = False) -&gt; Dict[str, Any]:
+    logger = setup_logging(cfg.kb.paths.logs_dir, name="kb")
+
+    cfg.kb.paths.notes_file.parent.mkdir(parents=True, exist_ok=True)
+    if not cfg.kb.paths.notes_file.exists():
+        cfg.kb.paths.notes_file.write_text("# Notes\n", encoding="utf-8")
+
+    manifest = Manifest.load(cfg.kb.paths.manifest_path)
+    sig = compute_signature(cfg)
+    prev_sig = manifest.get_signature()
+
+    vdb = VectorDB(cfg.kb.paths.chroma_dir, collection_name="kb")
+
+    if rebuild:
+        logger.warning("Rebuild requested: resetting vector DB and processed cache.")
+        vdb.reset()
+        if cfg.kb.paths.processed_dir.exists():
+            shutil.rmtree(cfg.kb.paths.processed_dir, ignore_errors=True)
+        manifest = Manifest.load(cfg.kb.paths.manifest_path)
+        prev_sig = None
+
+    if prev_sig and prev_sig != sig and not rebuild:
+        raise RuntimeError(
+            "KB config changed since last index build (chunking or embedding model).\n"
+            "Run: make kb-rebuild\n"
+            f"Old signature: {prev_sig}\nNew signature: {sig}"
+        )
+
+    manifest.set_signature(sig)
+
+    docs = load_all(cfg.kb.paths.raw_dir, extra_files=[cfg.kb.paths.notes_file])
+
+    if cfg.mode == "openai":
+        embedder = Embedder(
+            EmbedderSpec(
+                provider="openai",
+                model=cfg.kb.openai_embeddings.model,
+                timeout_seconds=cfg.kb.openai_embeddings.timeout_seconds,
+            ),
+            retries=cfg.retries,
+        )
+        embedder_name = f"openai:{cfg.kb.openai_embeddings.model}"
+    else:
+        embedder = Embedder(
+            EmbedderSpec(
+                provider="ollama",
+                model=cfg.kb.local_embeddings.model,
+                base_url=cfg.kb.local_embeddings.base_url,
+                timeout_seconds=cfg.kb.local_embeddings.timeout_seconds,
+            ),
+            retries=cfg.retries,
+        )
+        embedder_name = f"ollama:{cfg.kb.local_embeddings.model}"
+
+    added_chunks = 0
+    updated_docs = 0
+    skipped_docs = 0
+
+    for doc in docs:
+        _write_processed(cfg.kb.paths.processed_dir, doc)
+
+        rel_source = str(doc.source_path.relative_to(Path.cwd()))
+        doc_hash = sha256_file(doc.source_path)
+
+        prev = manifest.get_doc(rel_source)
+        if prev and prev.get("sha256") == doc_hash:
+            skipped_docs += 1
+            continue
+
+        vdb.delete_where({"source_path": rel_source})
+
+        chunks = chunk_text(doc.text, cfg.kb.chunking.chunk_size, cfg.kb.chunking.chunk_overlap)
+        if not chunks:
+            logger.warning("No text extracted from %s (skipping).", rel_source)
+            continue
+
+        texts = [c.text for c in chunks]
+        embeddings = embedder.embed_many(texts)
+
+        ids = [f"{doc_hash}:{c.chunk_index}" for c in chunks]
+        metadatas = [
+            {
+                "source_path": rel_source,
+                "chunk_index": c.chunk_index,
+                "sha256": doc_hash,
+                "ingested_at": now_iso(),
+                "embedder": embedder_name,
+            }
+            for c in chunks
+        ]
+
+        vdb.upsert(ids=ids, documents=texts, embeddings=embeddings, metadatas=metadatas)
+        manifest.upsert_doc(rel_source, doc_hash, len(chunks))
+        updated_docs += 1
+        added_chunks += len(chunks)
+        logger.info("Indexed %s (%d chunks).", rel_source, len(chunks))
+
+    manifest.save()
+
+    result = {
+        "mode": cfg.mode,
+        "embedder": embedder_name,
+        "added_chunks": added_chunks,
+        "updated_docs": updated_docs,
+        "skipped_docs": skipped_docs,
+        "total_chunks": vdb.count(),
+        "manifest_path": str(cfg.kb.paths.manifest_path),
+        "chroma_dir": str(cfg.kb.paths.chroma_dir),
+    }
+    logger.info("Ingest done: %s", result)
+    return result
+
+
+def search(cfg: AppConfig, query: str, top_k: int) -&gt; Dict[str, Any]:
+    logger = setup_logging(cfg.kb.paths.logs_dir, name="kb")
+    q = (query or "").strip()
+    if not q:
+        raise ValueError("Query must be non-empty.")
+
+    if cfg.mode == "openai":
+        embedder = Embedder(
+            EmbedderSpec(provider="openai", model=cfg.kb.openai_embeddings.model, timeout_seconds=cfg.kb.openai_embeddings.timeout_seconds),
+            retries=cfg.retries,
+        )
+    else:
+        embedder = Embedder(
+            EmbedderSpec(provider="ollama", model=cfg.kb.local_embeddings.model, base_url=cfg.kb.local_embeddings.base_url, timeout_seconds=cfg.kb.local_embeddings.timeout_seconds),
+            retries=cfg.retries,
+        )
+
+    vdb = VectorDB(cfg.kb.paths.chroma_dir, collection_name="kb")
+    qe = embedder.embed_one(q)
+    results = vdb.query(qe, top_k=top_k)
+
+    out = {
+        "query": q,
+        "top_k": top_k,
+        "results": [
+            {
+                "score": r.score,
+                "source": r.source,
+                "chunk_id": r.chunk_id,
+                "text": r.text,
+                "metadata": r.metadata,
+            }
+            for r in results
+        ],
+    }
+    logger.info("Search query=%r top_k=%d results=%d", q, top_k, len(results))
+    return out
+</code></pre>
+</details>
+
+
+<details>
+  <summary>kb/vectordb.py <span class="filepath">(75 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List
+
+import chromadb
+
+
+@dataclass(frozen=True)
+class SearchResult:
+    score: float
+    text: str
+    source: str
+    chunk_id: str
+    metadata: Dict[str, Any]
+
+
+class VectorDB:
+    def __init__(self, chroma_dir: Path, collection_name: str = "kb"):
+        chroma_dir.mkdir(parents=True, exist_ok=True)
+        self.client = chromadb.PersistentClient(path=str(chroma_dir))
+        self.collection = self.client.get_or_create_collection(
+            name=collection_name,
+            metadata={"hnsw:space": "cosine"},
+        )
+
+    def upsert(
+        self,
+        ids: List[str],
+        documents: List[str],
+        embeddings: List[List[float]],
+        metadatas: List[Dict[str, Any]],
+    ) -&gt; None:
+        self.collection.add(ids=ids, documents=documents, embeddings=embeddings, metadatas=metadatas)
+
+    def delete_where(self, where: Dict[str, Any]) -&gt; None:
+        self.collection.delete(where=where)
+
+    def count(self) -&gt; int:
+        return self.collection.count()
+
+    def reset(self) -&gt; None:
+        name = self.collection.name
+        self.client.delete_collection(name=name)
+        self.collection = self.client.get_or_create_collection(
+            name=name,
+            metadata={"hnsw:space": "cosine"},
+        )
+
+    def query(self, query_embedding: List[float], top_k: int = 5) -&gt; List[SearchResult]:
+        res = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k,
+            include=["documents", "metadatas", "distances"],
+        )
+
+        docs = (res.get("documents") or [[]])[0]
+        metas = (res.get("metadatas") or [[]])[0]
+        dists = (res.get("distances") or [[]])[0]
+        ids = (res.get("ids") or [[]])[0]
+
+        out: List[SearchResult] = []
+        for doc, meta, dist, cid in zip(docs, metas, dists, ids):
+            score = 1.0 - float(dist)
+            out.append(
+                SearchResult(
+                    score=score,
+                    text=doc,
+                    source=str(meta.get("source_path", "")),
+                    chunk_id=str(cid),
+                    metadata=dict(meta),
+                )
+            )
+        return out
+</code></pre>
+</details>
+
+
+<details>
+  <summary>logs/.gitkeep <span class="filepath">(1 lines)</span></summary>
+  <pre><code class="language-text">(keep)
+</code></pre>
+</details>
+
+
+<details>
+  <summary>requirements.txt <span class="filepath">(16 lines)</span></summary>
+  <pre><code class="language-text">chromadb&gt;=0.5.5
+numpy&gt;=1.26.4
+openai&gt;=1.40.0
+pypdf&gt;=4.2.0
+python-docx&gt;=1.1.2
+PyYAML&gt;=6.0.1
+python-dotenv&gt;=1.0.1
+requests&gt;=2.32.0
+rich&gt;=13.7.1
+tenacity&gt;=8.2.3
+tqdm&gt;=4.66.4
+
+fastapi&gt;=0.112.0
+uvicorn&gt;=0.30.0
+
+pytest&gt;=8.2.0
+</code></pre>
+</details>
+
+
+<details>
+  <summary>scripts/kb_cli.py <span class="filepath">(95 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import argparse
+import json
+
+from dotenv import load_dotenv
+
+from kb.config import load_config
+from kb.pipeline import ingest, search
+
+
+def main() -&gt; int:
+    load_dotenv()
+
+    p = argparse.ArgumentParser(prog="kb_cli", description="Knowledge Base CLI (ingest/search/notes).")
+    p.add_argument("--config", default="agent_config.yaml", help="Path to agent_config.yaml")
+
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    s_ingest = sub.add_parser("ingest", help="Ingest new/changed documents incrementally.")
+    s_ingest.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
+    s_rebuild = sub.add_parser("rebuild", help="Rebuild index from scratch (deletes old index).")
+    s_rebuild.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
+    s_search = sub.add_parser("search", help="Search the knowledge base.")
+    s_search.add_argument("--query", required=True, help="Search query text")
+    s_search.add_argument("--top-k", type=int, default=5, help="How many results to return")
+    s_search.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
+    s_note = sub.add_parser("add-note", help="Append a note to knowledge/notes/notes.md")
+    s_note.add_argument("--text", required=True, help="Note text to append")
+    s_note.add_argument("--ingest", action="store_true", help="Ingest after writing the note")
+    s_note.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
+    args = p.parse_args()
+    cfg = load_config(args.config)
+
+    if args.cmd in ("ingest", "rebuild"):
+        res = ingest(cfg, rebuild=(args.cmd == "rebuild"))
+        if getattr(args, "json", False):
+            print(json.dumps(res, indent=2))
+        else:
+            print("\nKB index updated.")
+            for k, v in res.items():
+                print(f"- {k}: {v}")
+        return 0
+
+    if args.cmd == "search":
+        res = search(cfg, query=args.query, top_k=args.top_k)
+        if args.json:
+            print(json.dumps(res, indent=2))
+        else:
+            print(f"\nQuery: {res['query']}\n")
+            for i, r in enumerate(res["results"], start=1):
+                print(f"[{i}] score={r['score']:.3f} source={r['source']} chunk_id={r['chunk_id']}")
+                print(r["text"][:800].strip())
+                print("-" * 60)
+        return 0
+
+    if args.cmd == "add-note":
+        notes_path = cfg.kb.paths.notes_file
+        notes_path.parent.mkdir(parents=True, exist_ok=True)
+        if not notes_path.exists():
+            notes_path.write_text("# Notes\n", encoding="utf-8")
+
+        from datetime import datetime
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        entry = f"\n\n## {ts}\n\n{args.text.strip()}\n"
+        with notes_path.open("a", encoding="utf-8") as f:
+            f.write(entry)
+
+        out = {
+            "notes_file": str(notes_path),
+            "appended_chars": len(entry),
+            "ingested": False,
+        }
+
+        if args.ingest:
+            ingest(cfg, rebuild=False)
+            out["ingested"] = True
+
+        if args.json:
+            print(json.dumps(out, indent=2))
+        else:
+            print("Note saved.")
+            print(f"- notes_file: {out['notes_file']}")
+            print(f"- ingested: {out['ingested']}")
+        return 0
+
+    raise RuntimeError("unreachable")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre>
+</details>
+
+
+<details>
+  <summary>scripts/kb_web.py <span class="filepath">(41 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from dotenv import load_dotenv
+
+from kb.config import load_config
+from kb.pipeline import search
+
+load_dotenv()
+app = FastAPI()
+
+
+@app.get("/", response_class=HTMLResponse)
+def home(q: str = ""):
+    cfg = load_config("agent_config.yaml")
+    html = ["&lt;html&gt;&lt;body style='font-family: sans-serif; max-width: 900px; margin: 40px;'&gt;"]
+    html.append("&lt;h1&gt;KnowledgeBot KB Search&lt;/h1&gt;")
+    html.append("&lt;form method='get'&gt;")
+    html.append("&lt;input name='q' style='width: 70%; padding: 8px;' placeholder='Search your KB...'/&gt;")
+    html.append("&lt;button style='padding: 8px;'&gt;Search&lt;/button&gt;")
+    html.append("&lt;/form&gt;")
+
+    if q.strip():
+        res = search(cfg, query=q, top_k=5)
+        html.append(f"&lt;h2&gt;Results for: {q}&lt;/h2&gt;")
+        for r in res["results"]:
+            html.append("&lt;div style='border: 1px solid #ddd; padding: 12px; margin: 12px 0;'&gt;")
+            html.append(f"&lt;div&gt;&lt;b&gt;Score:&lt;/b&gt; {r['score']:.3f} &lt;b&gt;Source:&lt;/b&gt; {r['source']}&lt;/div&gt;")
+            html.append("&lt;pre style='white-space: pre-wrap;'&gt;")
+            html.append((r["text"][:1200]).replace("&lt;", "&amp;lt;"))
+            html.append("&lt;/pre&gt;")
+            html.append("&lt;/div&gt;")
+
+    html.append("&lt;/body&gt;&lt;/html&gt;")
+    return "\n".join(html)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8099)
+</code></pre>
+</details>
+
+
+<details>
+  <summary>scripts/set_mode.py <span class="filepath">(24 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import yaml
+
+
+def main() -&gt; int:
+    if len(sys.argv) != 2 or sys.argv[1] not in ("local", "openai"):
+        print("Usage: python scripts/set_mode.py (local|openai)")
+        return 2
+
+    mode = sys.argv[1]
+    p = Path("agent_config.yaml")
+    data = yaml.safe_load(p.read_text(encoding="utf-8"))
+    data["mode"] = mode
+    p.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    print(f"Set mode -&gt; {mode} in agent_config.yaml")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre>
+</details>
+
+
+<details>
+  <summary>scripts/sync_openclaw.py <span class="filepath">(69 lines)</span></summary>
+  <pre><code class="language-text">from __future__ import annotations
+
+import json
+import os
+import subprocess
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+from kb.config import load_config
+
+
+def run(cmd: list[str]) -&gt; None:
+    r = subprocess.run(cmd, text=True, capture_output=True)
+    if r.returncode != 0:
+        msg = (
+            "OpenClaw sync failed.\n\n"
+            f"Command: {' '.join(cmd)}\n\n"
+            f"stdout:\n{r.stdout}\n\n"
+            f"stderr:\n{r.stderr}\n\n"
+            "Next steps:\n"
+            "1) Ensure OpenClaw is installed: openclaw --version\n"
+            "2) Run: openclaw doctor\n"
+            "3) If OpenClaw config is invalid, fix it or reinstall.\n"
+        )
+        raise RuntimeError(msg)
+    if r.stdout.strip():
+        print(r.stdout.strip())
+
+
+def main() -&gt; int:
+    load_dotenv()
+    cfg = load_config("agent_config.yaml")
+
+    project_root = Path.cwd().resolve()
+    workspace = str(project_root)
+
+    run(["openclaw", "config", "set", "agents.defaults.workspace", workspace])
+
+    if cfg.mode == "local":
+        run(["openclaw", "config", "set", "env.OLLAMA_API_KEY", "ollama-local"])
+        run(["openclaw", "config", "set", "agents.defaults.model.primary", cfg.openclaw.local_primary])
+        deny = cfg.openclaw.deny_in_local
+        run(["openclaw", "config", "set", "tools.profile", cfg.openclaw.tools_profile])
+        run(["openclaw", "config", "set", "tools.deny", json.dumps(deny)])
+    else:
+        key = os.environ.get("OPENAI_API_KEY", "").strip()
+        if not key or key.startswith("sk-REPLACE_ME"):
+            raise RuntimeError(
+                "OPENAI_API_KEY is missing.\n"
+                "Fix: edit .env and set OPENAI_API_KEY, then run: make mode-cloud"
+            )
+        run(["openclaw", "config", "set", "env.OPENAI_API_KEY", key])
+        run(["openclaw", "config", "set", "agents.defaults.model.primary", cfg.openclaw.cloud_primary])
+        run(["openclaw", "config", "set", "tools.profile", cfg.openclaw.tools_profile])
+        run(["openclaw", "config", "set", "tools.deny", json.dumps([])])
+
+    run(["openclaw", "config", "set", "tools.allow", json.dumps(["kb-tools"])])
+
+    print("\n✅ OpenClaw sync complete.")
+    print(f"- mode: {cfg.mode}")
+    print(f"- workspace: {workspace}")
+    print("\nIf changes don’t take effect, restart the gateway:")
+    print("  openclaw gateway restart")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre>
+</details>
+
+
+<details>
+  <summary>tests/test_chunker.py <span class="filepath">(11 lines)</span></summary>
+  <pre><code class="language-text">from kb.chunker import chunk_text
+
+
+def test_chunking_non_empty():
+    chunks = chunk_text("hello world " * 200, chunk_size=100, chunk_overlap=20)
+    assert len(chunks) &gt; 1
+    assert chunks[0].chunk_index == 0
+
+
+def test_empty_returns_none():
+    assert chunk_text("", 100, 10) == []
+</code></pre>
+</details>
+
+
+<details>
+  <summary>tests/test_manifest.py <span class="filepath">(14 lines)</span></summary>
+  <pre><code class="language-text">from pathlib import Path
+from kb.manifest import Manifest
+
+
+def test_manifest_roundtrip(tmp_path: Path):
+    p = tmp_path / "manifest.json"
+    m = Manifest.load(p)
+    m.set_signature("sig1")
+    m.upsert_doc("a.txt", "hash", 3)
+    m.save()
+
+    m2 = Manifest.load(p)
+    assert m2.get_signature() == "sig1"
+    assert m2.get_doc("a.txt")["num_chunks"] == 3
+</code></pre>
+</details>
+
+
+<details>
+  <summary>tests/test_smoke_kb.py <span class="filepath">(50 lines)</span></summary>
+  <pre><code class="language-text">import yaml
+from pathlib import Path
+
+from kb.config import load_config
+from kb.pipeline import ingest
+
+
+def test_smoke_ingest_and_search(tmp_path: Path, monkeypatch):
+    (tmp_path / "knowledge/raw").mkdir(parents=True)
+    (tmp_path / "knowledge/notes").mkdir(parents=True)
+    (tmp_path / "knowledge/index/chroma").mkdir(parents=True)
+    (tmp_path / "knowledge/processed").mkdir(parents=True)
+    (tmp_path / "knowledge/snapshots").mkdir(parents=True)
+    (tmp_path / "logs").mkdir(parents=True)
+
+    (tmp_path / "knowledge/raw/doc.txt").write_text("Cats are mammals.", encoding="utf-8")
+    (tmp_path / "knowledge/notes/notes.md").write_text("# Notes\n", encoding="utf-8")
+
+    cfg = {
+        "agent": {"name": "T", "role": "T", "description": "T"},
+        "mode": "local",
+        "openclaw": {"workspace": ".", "models": {"local_primary": "ollama/x", "cloud_primary": "openai/x"}, "tools": {"profile": "minimal", "deny_in_local": [], "allow_in_cloud": []}},
+        "kb": {
+            "paths": {
+                "raw_dir": str(tmp_path / "knowledge/raw"),
+                "notes_file": str(tmp_path / "knowledge/notes/notes.md"),
+                "processed_dir": str(tmp_path / "knowledge/processed"),
+                "index_dir": str(tmp_path / "knowledge/index"),
+                "chroma_dir": str(tmp_path / "knowledge/index/chroma"),
+                "manifest_path": str(tmp_path / "knowledge/index/manifest.json"),
+                "snapshots_dir": str(tmp_path / "knowledge/snapshots"),
+                "logs_dir": str(tmp_path / "logs"),
+            },
+            "chunking": {"chunk_size": 200, "chunk_overlap": 50},
+            "retrieval": {"top_k_default": 5},
+            "embeddings": {
+                "local": {"provider": "ollama", "model": "nomic-embed-text", "base_url": "http://127.0.0.1:11434", "timeout_seconds": 1},
+                "openai": {"provider": "openai", "model": "text-embedding-3-small", "timeout_seconds": 1},
+            },
+        },
+        "reliability": {"retries": 1, "retry_backoff_seconds": 0.1},
+    }
+    (tmp_path / "agent_config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    try:
+        ingest(load_config("agent_config.yaml"), rebuild=True)
+    except Exception as e:
+        assert "Ollama" in str(e) or "Failed to embed" in str(e)
+</code></pre>
+</details>
+</div>
+      <footer>
+        Generated as a single self-contained HTML page. No external assets required.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    return true;
+  }).catch(()=>{
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+function wireCopyButtons(){
+  document.querySelectorAll('pre').forEach(pre=>{
+    const code = pre.querySelector('code');
+    if(!code) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', ()=>{
+      copyText(code.innerText);
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent='Copy', 1200);
+    });
+    pre.appendChild(btn);
+  });
+}
+
+function scrollSpy(){
+  const links = Array.from(document.querySelectorAll('.toc a'));
+  const sections = links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const link = document.querySelector(`.toc a[href="#${e.target.id}"]`);
+        if(link) link.classList.add('active');
+      }
+    });
+  }, {rootMargin: "-45% 0px -50% 0px", threshold: 0.01});
+
+  sections.forEach(s=>obs.observe(s));
+}
+
+function filterToc(q){
+  const needle = q.trim().toLowerCase();
+  document.querySelectorAll('.toc a').forEach(a=>{
+    const t = a.innerText.toLowerCase();
+    a.style.display = t.includes(needle) ? 'block' : 'none';
+  });
+}
+
+function setAllDetails(open){
+  document.querySelectorAll('details').forEach(d=>{ d.open = open; });
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  wireCopyButtons();
+  scrollSpy();
+
+  const input = document.getElementById('tocSearch');
+  if(input){
+    input.addEventListener('input', ()=> filterToc(input.value));
+  }
+
+  document.getElementById('expandAll')?.addEventListener('click', ()=> setAllDetails(true));
+  document.getElementById('collapseAll')?.addEventListener('click', ()=> setAllDetails(false));
+});
+</script>
+</body>
+</html>

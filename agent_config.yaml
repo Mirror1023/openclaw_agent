@@ -1,0 +1,54 @@
+agent:
+  name: "KnowledgeBot"
+  role: "Local-first RAG assistant"
+  description: "Answers questions using your private knowledge base (documents + notes)."
+
+mode: "openai"  # "local" or "openai"
+
+openclaw:
+  workspace: "."
+
+  models:
+    # Local Ollama chat model used in Mode A
+    local_primary: "ollama/gpt-oss:20b"
+    # Cloud model used in Mode B
+    cloud_primary: "google-gemini-cli/gemini-3-pro-preview"
+
+  tools:
+    profile: "full"
+    deny_in_local: ["web_search", "web_fetch", "browser"]
+    allow_in_cloud: ["web_search", "web_fetch"]
+
+kb:
+  paths:
+    raw_dir: "knowledge/raw"
+    notes_file: "knowledge/notes/notes.md"
+    processed_dir: "knowledge/processed"
+    index_dir: "knowledge/index"
+    chroma_dir: "knowledge/index/chroma"
+    manifest_path: "knowledge/index/manifest.json"
+    snapshots_dir: "knowledge/snapshots"
+    logs_dir: "logs"
+
+  chunking:
+    chunk_size: 900
+    chunk_overlap: 150
+
+  retrieval:
+    top_k_default: 5
+
+  embeddings:
+    local:
+      provider: "ollama"
+      model: "nomic-embed-text"
+      base_url: "http://127.0.0.1:11434"
+      timeout_seconds: 60
+
+    openai:
+      provider: "gemini"
+      model: "gemini-embedding-001"
+      timeout_seconds: 60
+
+reliability:
+  retries: 3
+  retry_backoff_seconds: 1.5
